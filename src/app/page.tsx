@@ -194,7 +194,7 @@ export default function MenuPage() {
             {filteredItems.map(item => (
               <div
                 key={item.id}
-                className="menu-card"
+                className={`menu-card${mode === 'edit' ? ' edit-mode' : ''}`}
                 onClick={() => mode !== 'edit' && setDetailItem(item)}
               >
                 {item.image_url
