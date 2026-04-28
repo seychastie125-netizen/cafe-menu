@@ -26,6 +26,16 @@ create table if not exists items (
   created_at       timestamptz default now()
 );
 
+-- Таблица глобальных настроек сайта
+create table if not exists site_settings (
+  id                      serial primary key,
+  cafe_name              text    not null default 'Кофейня',
+  cafe_subtitle          text    not null default 'Электронное меню',
+  currency_symbol        text    not null default '₽',
+  show_unavailable_items boolean not null default true,
+  updated_at             timestamptz default now()
+);
+
 -- Индексы для быстрой фильтрации
 create index if not exists idx_items_category on items(category_id);
 create index if not exists idx_items_available on items(available);
@@ -33,6 +43,7 @@ create index if not exists idx_items_available on items(available);
 -- Row Level Security
 alter table categories enable row level security;
 alter table items enable row level security;
+alter table site_settings enable row level security;
 
 -- Публичное чтение (гости видят меню)
 create policy "Public can read categories"
@@ -40,6 +51,9 @@ create policy "Public can read categories"
 
 create policy "Public can read available items"
   on items for select using (available = true);
+
+create policy "Public can read site settings"
+  on site_settings for select using (true);
 
 -- Запись только через Service Role (API Routes)
 -- Service Role обходит RLS автоматически
@@ -72,3 +86,7 @@ insert into categories (name, icon, sort_order) values
   ('Выпечка',  '🥐', 4),
   ('Десерты',  '🍰', 5)
 on conflict (name) do nothing;
+
+insert into site_settings (cafe_name, cafe_subtitle, currency_symbol, show_unavailable_items) values
+  ('Кофейня', 'Электронное меню', '₽', true)
+on conflict do nothing;

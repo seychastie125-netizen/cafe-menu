@@ -56,12 +56,18 @@ export type Database = {
           modifier_groups?: ModifierGroup[]
         }
       }
+      site_settings: {
+        Row: { id: number; cafe_name: string; cafe_subtitle: string; currency_symbol: string; show_unavailable_items: boolean; updated_at: string }
+        Insert: { cafe_name?: string; cafe_subtitle?: string; currency_symbol?: string; show_unavailable_items?: boolean }
+        Update: { cafe_name?: string; cafe_subtitle?: string; currency_symbol?: string; show_unavailable_items?: boolean; updated_at?: string }
+      }
     }
   }
 }
 
 export type Category = Database['public']['Tables']['categories']['Row']
 export type Item = Database['public']['Tables']['items']['Row']
+export type SiteSettings = Database['public']['Tables']['site_settings']['Row']
 
 export type ModifierGroup = {
   id: number

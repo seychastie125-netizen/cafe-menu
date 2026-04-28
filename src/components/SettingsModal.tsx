@@ -21,6 +21,7 @@ export default function SettingsModal({ settings, onSave, onClose, showToast }: 
   const [cafeSubtitle, setCafeSubtitle] = useState(settings.cafeSubtitle)
   const [currencySymbol, setCurrencySymbol] = useState(settings.currencySymbol)
   const [showUnavailableItems, setShowUnavailableItems] = useState(settings.showUnavailableItems)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setCafeName(settings.cafeName)
@@ -35,12 +36,14 @@ export default function SettingsModal({ settings, onSave, onClose, showToast }: 
       return
     }
 
+    setSaving(true)
     onSave({
       cafeName: cafeName.trim(),
       cafeSubtitle: cafeSubtitle.trim() || 'Электронное меню',
       currencySymbol: currencySymbol.trim() || '₽',
       showUnavailableItems,
     })
+    setSaving(false)
   }
 
   return (
@@ -78,7 +81,9 @@ export default function SettingsModal({ settings, onSave, onClose, showToast }: 
         </div>
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Отмена</button>
-          <button className="btn btn-primary" onClick={handleSave}>Сохранить</button>
+          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+            {saving ? <span className="spinner" /> : '💾 Сохранить'}
+          </button>
         </div>
       </div>
     </div>

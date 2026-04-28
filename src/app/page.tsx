@@ -43,33 +43,46 @@ export default function MenuPage() {
 
   // Загрузка данных
   const loadData = useCallback(async () => {
-    const [{ data: cats }, { data: its }] = await Promise.all([
+    const [{ data: cats }, { data: its }, settingsRes] = await Promise.all([
       supabase.from('categories').select('*').order('sort_order'),
       supabase.from('items').select('*').order('sort_order'),
+      fetch('/api/settings')
     ])
     setCategories(cats || [])
     setItems(its || [])
+    if (settingsRes.ok) {
+      const settingsData = await settingsRes.json()
+      setSettings(settingsData)
+    }
     setLoading(false)
   }, [])
 
   useEffect(() => { loadData() }, [loadData])
 
-  useEffect(() => {
-    const saved = typeof window !== 'undefined' ? window.localStorage.getItem('siteSettings') : null
-    if (saved) {
-      try {
-        setSettings(JSON.parse(saved))
-      } catch {
-        // ignore invalid data
-      }
+  const saveSettings = async (next: typeof settings) => {
+    const adminPin = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('adminPin') || '' : ''
+    const res = await fetch('/api/settings', {
+      method: 'PATCH',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-admin-pin': adminPin
+      },
+      body: JSON.stringify({
+        cafeName: next.cafeName,
+        cafeSubtitle: next.cafeSubtitle,
+        currencySymbol: next.currencySymbol,
+        showUnavailableItems: next.showUnavailableItems
+      })
+    })
+    
+    if (res.ok) {
+      const data = await res.json()
+      setSettings(data)
+      setShowSettings(false)
+      showToast('✅ Настройки сайта сохранены', 'success')
+    } else {
+      showToast('❌ Ошибка сохранения настроек', 'error')
     }
-  }, [])
-
-  const saveSettings = (next: typeof settings) => {
-    setSettings(next)
-    window.localStorage.setItem('siteSettings', JSON.stringify(next))
-    setShowSettings(false)
-    showToast('✅ Настройки сайта сохранены', 'success')
   }
 
   // Анимация эмодзи в хедере
