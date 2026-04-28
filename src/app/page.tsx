@@ -151,9 +151,11 @@ export default function MenuPage() {
           <button className={`btn-mode${mode === 'edit' ? ' active' : ''}`} onClick={requestEditMode}>
             <span>✏️</span> Редактор
           </button>
-          <button className="btn-mode" onClick={() => setShowSettings(true)}>
-            <span>⚙</span> Настройки
-          </button>
+          {mode === 'edit' && (
+            <button className="btn-mode" onClick={() => setShowSettings(true)}>
+              <span>⚙</span> Настройки
+            </button>
+          )}
         </div>
       </header>
 
