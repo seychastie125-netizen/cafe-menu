@@ -10,12 +10,14 @@ type Props = {
   onSave: (item: Item) => void
   onClose: () => void
   showToast: (msg: string, type?: string) => void
+  currencySymbol: string
 }
 
-export default function ItemModal({ item, categories, defaultCategoryId, onSave, onClose, showToast }: Props) {
+export default function ItemModal({ item, categories, defaultCategoryId, onSave, onClose, showToast, currencySymbol }: Props) {
   const [name, setName] = useState(item?.name || '')
   const [desc, setDesc] = useState(item?.description || '')
   const [price, setPrice] = useState(item?.price?.toString() || '0')
+  const [sortOrder, setSortOrder] = useState(item?.sort_order?.toString() || '0')
   const [categoryId, setCategoryId] = useState(item?.category_id || defaultCategoryId || categories[0]?.id)
   const [imageUrl, setImageUrl] = useState(item?.image_url || '')
   const [available, setAvailable] = useState(item?.available ?? true)
@@ -55,6 +57,7 @@ export default function ItemModal({ item, categories, defaultCategoryId, onSave,
       name: name.trim(),
       description: desc.trim(),
       price: parseInt(price) || 0,
+      sort_order: parseInt(sortOrder) || 0,
       category_id: categoryId,
       image_url: imageUrl || null,
       available,
@@ -122,7 +125,7 @@ export default function ItemModal({ item, categories, defaultCategoryId, onSave,
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="form-group">
-              <label className="form-label">Цена (₽)</label>
+              <label className="form-label">Цена ({currencySymbol})</label>
               <input className="form-input" type="number" min="0" value={price} onChange={e => setPrice(e.target.value)} />
             </div>
             <div className="form-group">
@@ -131,6 +134,10 @@ export default function ItemModal({ item, categories, defaultCategoryId, onSave,
                 {categories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
               </select>
             </div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Порядок отображения</label>
+            <input className="form-input" type="number" min="0" value={sortOrder} onChange={e => setSortOrder(e.target.value)} />
           </div>
 
           <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

@@ -6,6 +6,7 @@ import DetailModal from '@/components/DetailModal'
 import PinModal from '@/components/PinModal'
 import ItemModal from '@/components/ItemModal'
 import CategoryModal from '@/components/CategoryModal'
+import SettingsModal from '@/components/SettingsModal'
 import ConfirmModal from '@/components/ConfirmModal'
 import Toast from '@/components/Toast'
 
@@ -20,10 +21,16 @@ export default function MenuPage() {
   const [editItem, setEditItem] = useState<Item | null | undefined>(undefined) // undefined = closed
   const [showPin, setShowPin] = useState(false)
   const [showCatModal, setShowCatModal] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<Item | null>(null)
   const [toast, setToast] = useState<{msg: string; type?: string} | null>(null)
   const [scrollTop, setScrollTop] = useState(false)
-  const [cafeName] = useState('Кофейня')
+  const [settings, setSettings] = useState({
+    cafeName: 'Кофейня',
+    cafeSubtitle: 'Электронное меню',
+    currencySymbol: '₽',
+    showUnavailableItems: true,
+  })
   const [cupEmoji, setCupEmoji] = useState('☕')
   const [cupAnimating, setCupAnimating] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -47,6 +54,24 @@ export default function MenuPage() {
 
   useEffect(() => { loadData() }, [loadData])
 
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? window.localStorage.getItem('siteSettings') : null
+    if (saved) {
+      try {
+        setSettings(JSON.parse(saved))
+      } catch {
+        // ignore invalid data
+      }
+    }
+  }, [])
+
+  const saveSettings = (next: typeof settings) => {
+    setSettings(next)
+    window.localStorage.setItem('siteSettings', JSON.stringify(next))
+    setShowSettings(false)
+    showToast('✅ Настройки сайта сохранены', 'success')
+  }
+
   // Анимация эмодзи в хедере
   useEffect(() => {
     let idx = 0
@@ -61,9 +86,9 @@ export default function MenuPage() {
     return () => clearInterval(interval)
   }, [])
 
-  const filteredItems = currentCategory === null
-    ? items
-    : items.filter(i => i.category_id === currentCategory)
+  const filteredItems = items
+    .filter(i => currentCategory === null || i.category_id === currentCategory)
+    .filter(i => settings.showUnavailableItems || i.available)
 
   const handleDeleteItem = async () => {
     if (!confirmDelete) return
@@ -81,8 +106,8 @@ export default function MenuPage() {
   const handleSaveItem = (item: Item) => {
     setItems(prev => {
       const idx = prev.findIndex(i => i.id === item.id)
-      if (idx >= 0) { const n = [...prev]; n[idx] = item; return n }
-      return [...prev, item]
+      const next = idx >= 0 ? [...prev.slice(0, idx), item, ...prev.slice(idx + 1)] : [...prev, item]
+      return next.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
     })
     setEditItem(undefined)
     showToast('✅ Сохранено')
@@ -114,8 +139,8 @@ export default function MenuPage() {
         <div className="header-logo">
           <span id="header-cup" className={`cup${cupAnimating ? ' animating' : ''}`}>{cupEmoji}</span>
           <div>
-            <div className="name">{cafeName}</div>
-            <div className="sub">Электронное меню</div>
+            <div className="name">{settings.cafeName}</div>
+            <div className="sub">{settings.cafeSubtitle}</div>
           </div>
         </div>
         <div className="header-actions">
@@ -125,6 +150,9 @@ export default function MenuPage() {
           </button>
           <button className={`btn-mode${mode === 'edit' ? ' active' : ''}`} onClick={requestEditMode}>
             <span>✏️</span> Редактор
+          </button>
+          <button className="btn-mode" onClick={() => setShowSettings(true)}>
+            <span>⚙</span> Настройки
           </button>
         </div>
       </header>
@@ -181,7 +209,7 @@ export default function MenuPage() {
                 <div className="card-body">
                   <div className="card-title">{item.name}</div>
                   <div className="card-desc">{item.description}</div>
-                  <div className="card-price">{item.price}<span>₽</span></div>
+                  <div className="card-price">{item.price}<span>{settings.currencySymbol}</span></div>
                 </div>
               </div>
             ))}
@@ -207,8 +235,16 @@ export default function MenuPage() {
       <button className={`scroll-top-btn${scrollTop ? ' visible' : ''}`} onClick={() => mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}>↑</button>
 
       {/* MODALS */}
-      {detailItem && <DetailModal item={detailItem} catIcon={catIcon(detailItem.category_id)} onClose={() => setDetailItem(null)} />}
+      {detailItem && <DetailModal item={detailItem} catIcon={catIcon(detailItem.category_id)} currencySymbol={settings.currencySymbol} onClose={() => setDetailItem(null)} />}
       {showPin && <PinModal onSuccess={onPinSuccess} onClose={() => setShowPin(false)} />}
+      {showSettings && (
+        <SettingsModal
+          settings={settings}
+          onSave={saveSettings}
+          onClose={() => setShowSettings(false)}
+          showToast={showToast}
+        />
+      )}
       {editItem !== undefined && (
         <ItemModal
           item={editItem}
@@ -217,6 +253,7 @@ export default function MenuPage() {
           onSave={handleSaveItem}
           onClose={() => setEditItem(undefined)}
           showToast={showToast}
+          currencySymbol={settings.currencySymbol}
         />
       )}
       {showCatModal && (

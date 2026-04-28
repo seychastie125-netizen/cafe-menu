@@ -6,10 +6,11 @@ import type { Item, ModifierGroup } from '@/lib/supabase'
 type Props = {
   item: Item
   catIcon: string
+  currencySymbol: string
   onClose: () => void
 }
 
-export default function DetailModal({ item, catIcon, onClose }: Props) {
+export default function DetailModal({ item, catIcon, currencySymbol, onClose }: Props) {
   const [selectedOptions, setSelectedOptions] = useState<Record<number, number[]>>({})
 
   const groups: ModifierGroup[] = item.modifier_groups || []
@@ -58,14 +59,14 @@ export default function DetailModal({ item, catIcon, onClose }: Props) {
                         onClick={() => chipToggle(gi, oi, group.type)}
                       >
                         {opt.name}
-                        {opt.price !== 0 && <span className="chip-price">{opt.price > 0 ? '+' : ''}{opt.price}₽</span>}
+                        {opt.price !== 0 && <span className="chip-price">{opt.price > 0 ? '+' : ''}{opt.price}{currencySymbol}</span>}
                       </div>
                     ))}
                   </div>
                 </div>
               )
             })}
-            <div className="detail-price">{totalPrice}<span>₽</span></div>
+            <div className="detail-price">{totalPrice}<span>{currencySymbol}</span></div>
           </div>
         </div>
         <div className="modal-footer">
