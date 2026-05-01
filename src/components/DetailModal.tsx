@@ -29,16 +29,24 @@ export default function DetailModal({ item, catIcon, currencySymbol, onClose }: 
     })
   }
 
+  const [zoomed, setZoomed] = useState(false)
+
   return (
     <div className="modal-overlay open" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal">
+      <div className="modal" style={{ maxWidth: 700 }}>
         <div className="modal-header">
           <span className="modal-title">{item.name}</span>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body" style={{ padding: 0 }}>
           {item.image_url
-            ? <img src={item.image_url} alt={item.name} style={{ width: '100%', height: 240, objectFit: 'cover', display: 'block' }} />
+            ? <img
+                src={item.image_url}
+                alt={item.name}
+                className={`detail-image${zoomed ? ' zoomed' : ''}`}
+                onClick={() => setZoomed(prev => !prev)}
+                style={{ width: '100%', height: 320, objectFit: 'cover', display: 'block' }}
+              />
             : <div style={{ width: '100%', height: 200, background: 'var(--card2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 64 }}>{catIcon}</div>
           }
           <div style={{ padding: '20px 24px' }}>

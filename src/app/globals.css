@@ -120,6 +120,9 @@ body {
 .modal-close:hover { background: var(--card); color: var(--text); }
 .modal-body { padding: 20px 24px; }
 .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+.detail-image { cursor: zoom-in; transition: transform .2s ease, filter .2s ease; }
+.detail-image.zoomed { transform: scale(1.05); cursor: zoom-out; }
+.detail-image:hover { filter: brightness(1.05); }
 
 /* FORMS */
 .form-group { margin-bottom: 18px; }
